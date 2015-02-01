@@ -68,48 +68,51 @@ Pebble.addEventListener('webviewclosed', function(e) {
   }
 });
 
-var menu = new UI.Menu({
-  sections: [{
-    title: 'Projects',
-    items: []
-  }]
-});
 
-var itemsMenu = new UI.Menu({
-  sections: [{
-    title: 'Items',
-    items: []
-  }]
-});
+
+
 
 function completeItem(menu, menuItemIndex, menuItem) {
   if(menuItem.item) {
-      console.log('id ' + menuItem.item.id);
-    /*Ajax(
+    console.log('id ' + menuItem.item.id);
+    var id = JSON.stringify([menuItem.item.id]);
+    var checked = menuItem.item.checked;
+    var url;
+    if(checked) {
+      url = 'https://todoist.com//API/uncompleteItems?token='+token+"&ids="+ id;
+    } else {
+      url = 'https://todoist.com//API/completeItems?token='+token+"&ids="+ id+"&in_history=0";
+    }
+    Ajax(
       {
-        url: 'https://todoist.com//API/completeItems?token='+token+"&ids="+[id],
+        url: url,
         type: 'json',
       },
       function(data) {
-        
+        menuItem.item.checked = !menuItem.item.checked;
+        if(checked) {
+          menu.item(0, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:''});
+        } else {
+          menu.item(0, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:'images/checkmark.png'});
+        }
       },
       function(error) {
         console.log(error);
       }      
-    );*/
-
+    );
     console.log(menuItem.icon);
-    if(menuItem.icon) {
-      menu.item(0, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:''});
-    } else {
-      menu.item(0, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:'images/checkmark.png'});
-    }
   } else {
      displayMessage('Error');
   }
 }
 
 function displayProject(project) {
+  var itemsMenu = new UI.Menu({
+  sections: [{
+      title: project.name,
+      items: []
+    }]
+  });
   Ajax(
   {
     url: 'https://todoist.com/API/getUncompletedItems?token='+token+"&project_id="+project.id,
@@ -119,13 +122,12 @@ function displayProject(project) {
     console.log('data: '+ JSON.stringify(data, null, 4));
     var items = [];
     data.forEach(function(item, index, array) {
-      items.push({title:item.content, item:item, icon:''});
+      var icon = item.checked ? 'images/checkmark.png' : '';
+      items.push({title:item.content, item:item, icon:icon});
     });
     itemsMenu.items(0,items);
     itemsMenu.on('select', function(e) {
       completeItem(e.menu, e.itemIndex, e.item);
-      //displayProject(e.item);
-      //console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
     });
     itemsMenu.show();
   },
@@ -144,6 +146,12 @@ function loadProjects() {
         type: 'json'
       },
       function(data) {
+        var menu = new UI.Menu({
+          sections: [{
+            title: 'Projects',
+            items: []
+          }]
+        });
         loading.hide();
         console.log('data: '+ JSON.stringify(data, null, 4));
         var projects = [];
