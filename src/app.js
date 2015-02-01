@@ -68,10 +68,6 @@ Pebble.addEventListener('webviewclosed', function(e) {
   }
 });
 
-
-
-
-
 function completeItem(menu, menuItemIndex, menuItem) {
   if(menuItem.item) {
     console.log('id ' + menuItem.item.id);
@@ -119,6 +115,8 @@ function displayProject(project) {
     type: 'json',
   },
   function(data) {
+    if(data && data.length > 0) {
+    console.log(data);
     console.log('data: '+ JSON.stringify(data, null, 4));
     var items = [];
     data.forEach(function(item, index, array) {
@@ -129,7 +127,10 @@ function displayProject(project) {
     itemsMenu.on('select', function(e) {
       completeItem(e.menu, e.itemIndex, e.item);
     });
-    itemsMenu.show();
+    itemsMenu.show(); 
+    } else {
+      displayMessage(project.name, "No tasks to display");
+    }
   },
   function(error) {
     console.log('fail with project id ' + project.id);
