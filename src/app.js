@@ -5,6 +5,7 @@ var Vector2 = require('vector2');
 var Ajax = require('ajax');
 
 var todayString = "Today";
+var overdueString = "overdue";
 
 var loading = new UI.Window();
 var loadingBackground = new UI.Rect({position: new Vector2(0,0), size: new Vector2(144,168)});
@@ -78,16 +79,16 @@ Pebble.addEventListener('webviewclosed', function(e) {
   }
 });
 
-function completeItem(menu, menuItemIndex, menuItem) {
+function completeItem(menu, sectionIndex, menuItemIndex, menuItem) {
   if(menuItem.item) {
     console.log('id ' + menuItem.item.id);
     var id = JSON.stringify([menuItem.item.id]);
     var checked = menuItem.item.checked;
     var url;
     if(checked) {
-      url = 'https://todoist.com//API/uncompleteItems?token='+token+"&ids="+ id;
+      url = 'https://todoist.com/API/uncompleteItems?token='+token+"&ids="+ id;
     } else {
-      url = 'https://todoist.com//API/completeItems?token='+token+"&ids="+ id+"&in_history=0";
+      url = 'https://todoist.com/API/completeItems?token='+token+"&ids="+ id+"&in_history=0";
     }
     Ajax(
       {
@@ -97,9 +98,9 @@ function completeItem(menu, menuItemIndex, menuItem) {
       function(data) {
         menuItem.item.checked = !menuItem.item.checked;
         if(checked) {
-          menu.item(0, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:''});
+          menu.item(sectionIndex, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:''});
         } else {
-          menu.item(0, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:'images/checkmark.png'});
+          menu.item(sectionIndex, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:'images/checkmark.png'});
         }
       },
       function(error) {
@@ -125,29 +126,44 @@ function clickOnItemProject(item) {
 function queryToday() {
     var itemsMenu = new UI.Menu({
   sections: [{
+      title: overdueString,
+      items: []
+    }, {
       title: todayString,
       items: []
     }]
   });
   Ajax(
   {
-    url: 'https://todoist.com/API/query?token='+token+"&queries="+JSON.stringify([todayString]),
+    url: 'https://todoist.com/API/query?token='+token+"&queries="+JSON.stringify([todayString, overdueString]),
     type: 'json',
   },
   function(data) {
-    var itemListFromData = data[0].data;
-    if(itemListFromData && itemListFromData.length > 0) {
       console.log(data);
       console.log('data: '+ JSON.stringify(data, null, 4));
-      var items = [];
+    
+    var itemOverdue = data[1].data;
+    var itemToday = data[0].data;
+    var itemListFromData = [];
+    itemListFromData = itemListFromData.concat(itemOverdue);
+    itemListFromData = itemListFromData.concat(itemToday);    
 
-      itemListFromData.forEach(function(item, index, array) {
+    if(itemListFromData && itemListFromData.length > 0) {
+      var itemsMenuOverdue = [];
+      var itemsMenuToday = [];
+      itemOverdue.forEach(function(item, index, array) {
         var icon = item.checked ? 'images/checkmark.png' : '';
-        items.push({title:item.content, item:item, icon:icon});
+        itemsMenuOverdue.push({title:item.content, item:item, icon:icon});
       });
-      itemsMenu.items(0,items);
+      itemToday.forEach(function(item, index, array) {
+        var icon = item.checked ? 'images/checkmark.png' : '';
+        itemsMenuToday.push({title:item.content, item:item, icon:icon});
+      });
+      
+      itemsMenu.items(0,itemsMenuOverdue);
+      itemsMenu.items(1,itemsMenuToday);
       itemsMenu.on('select', function(e) {
-        completeItem(e.menu, e.itemIndex, e.item);
+        completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
       });
       itemsMenu.on('longSelect', function(e) {
         displayMessageWithSubtitle(e.item.item.content);
