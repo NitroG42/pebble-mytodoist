@@ -135,11 +135,12 @@ function queryToday() {
     type: 'json',
   },
   function(data) {
-    if(data && data.length > 0) {
+    var itemListFromData = data[0].data;
+    if(itemListFromData && itemListFromData.length > 0) {
       console.log(data);
       console.log('data: '+ JSON.stringify(data, null, 4));
       var items = [];
-      var itemListFromData = data[0].data;
+
       itemListFromData.forEach(function(item, index, array) {
         var icon = item.checked ? 'images/checkmark.png' : '';
         items.push({title:item.content, item:item, icon:icon});
@@ -153,7 +154,7 @@ function queryToday() {
       });
       itemsMenu.show();   
     } else {
-      displayMessage(todayString, "No tasks to display");
+      displayMessage(todayString, "No tasks today");
     }
   },
   function(error) {
