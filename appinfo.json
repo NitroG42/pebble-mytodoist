@@ -44,7 +44,7 @@
     "shortName": "MyTodoist",
     "uuid": "30025c65-8dab-40cf-9f47-c75c708799af",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.1",
     "watchapp": {
         "watchface": false
     }

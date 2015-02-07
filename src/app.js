@@ -23,6 +23,14 @@ function displayMessage(title, subtitle) {
   }
   card.show();
 }
+function displayMessageWithSubtitle(subtitle) {
+  var card = new UI.Card({
+    subtitle:subtitle,
+    scrollable:true
+  });
+
+  card.show();
+}
 
 
 Pebble.addEventListener('showConfiguration', function(e) {
@@ -127,6 +135,9 @@ function displayProject(project) {
     itemsMenu.on('select', function(e) {
       completeItem(e.menu, e.itemIndex, e.item);
     });
+    itemsMenu.on('longSelect', function(e) {
+      displayMessageWithSubtitle(e.item.item.content);
+    });
     itemsMenu.show(); 
     } else {
       displayMessage(project.name, "No tasks to display");
@@ -157,7 +168,7 @@ function loadProjects() {
         console.log('data: '+ JSON.stringify(data, null, 4));
         var projects = [];
         data.forEach(function(project, index, array) {
-          projects.push({title:project.name, project:project});
+          projects.push({title:project.name, project:project, scrollable:true});
         });
         menu.items(0,projects);
         menu.on('select', function(e) {
