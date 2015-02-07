@@ -4,6 +4,8 @@ var UI = require('ui');
 var Vector2 = require('vector2');
 var Ajax = require('ajax');
 
+var todayString = "Today";
+
 var loading = new UI.Window();
 var loadingBackground = new UI.Rect({position: new Vector2(0,0), size: new Vector2(144,168)});
 var loadingText = new UI.Text({ position: new Vector2(0, 60), size: new Vector2(144, 20),
@@ -110,6 +112,57 @@ function completeItem(menu, menuItemIndex, menuItem) {
   }
 }
 
+function clickOnItemProject(item) {
+  if(item.custom) {
+    if(item.title == todayString) {
+      queryToday();
+    }
+  } else {
+    displayProject(item.project);
+  }
+}
+
+function queryToday() {
+    var itemsMenu = new UI.Menu({
+  sections: [{
+      title: todayString,
+      items: []
+    }]
+  });
+  Ajax(
+  {
+    url: 'https://todoist.com/API/query?token='+token+"&queries="+JSON.stringify([todayString]),
+    type: 'json',
+  },
+  function(data) {
+    if(data && data.length > 0) {
+      console.log(data);
+      console.log('data: '+ JSON.stringify(data, null, 4));
+      var items = [];
+      var itemListFromData = data[0].data;
+      itemListFromData.forEach(function(item, index, array) {
+        var icon = item.checked ? 'images/checkmark.png' : '';
+        items.push({title:item.content, item:item, icon:icon});
+      });
+      itemsMenu.items(0,items);
+      itemsMenu.on('select', function(e) {
+        completeItem(e.menu, e.itemIndex, e.item);
+      });
+      itemsMenu.on('longSelect', function(e) {
+        displayMessageWithSubtitle(e.item.item.content);
+      });
+      itemsMenu.show();   
+    } else {
+      displayMessage(todayString, "No tasks to display");
+    }
+  },
+  function(error) {
+    console.log('fail to query today');
+    console.log(error);
+  }
+);
+}
+
 function displayProject(project) {
   var itemsMenu = new UI.Menu({
   sections: [{
@@ -166,14 +219,15 @@ function loadProjects() {
         });
         loading.hide();
         console.log('data: '+ JSON.stringify(data, null, 4));
+        
         var projects = [];
+        projects.push({title:todayString, project:null, custom:true});
         data.forEach(function(project, index, array) {
-          projects.push({title:project.name, project:project, scrollable:true});
+          projects.push({title:project.name, project:project, custom:false});
         });
         menu.items(0,projects);
         menu.on('select', function(e) {
-          displayProject(e.item.project);
-          //console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
+          clickOnItemProject(e.item);
         });
         menu.show();
       },
