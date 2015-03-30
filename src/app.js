@@ -275,5 +275,4 @@ function loadProjects() {
   }
 }
 token = localStorage.getItem(appKey);
-//token = "ac864848aaf8b7976a853d5f9e65684e9c310662";
 loadProjects();
