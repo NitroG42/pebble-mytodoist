@@ -113,6 +113,14 @@ function completeItem(menu, sectionIndex, menuItemIndex, menuItem) {
   }
 }
 
+function replaceGmail(item) {
+  if (item.content.search(/^https:\/\/mail.google.com/) === 0){
+    var rpl = item.content.match(/\((.+)\)/);
+    item.content = item.content.replace(/^.*$/, rpl[1]);
+    return item;
+  }
+}
+
 function clickOnItemProject(item) {
   if(item.custom) {
     if(item.title == todayString) {
@@ -153,10 +161,12 @@ function queryToday() {
       var itemsMenuToday = [];
       itemOverdue.forEach(function(item, index, array) {
         var icon = item.checked ? 'images/checkmark.png' : '';
+        replaceGmail(item);
         itemsMenuOverdue.push({title:item.content, item:item, icon:icon});
       });
       itemToday.forEach(function(item, index, array) {
         var icon = item.checked ? 'images/checkmark.png' : '';
+        replaceGmail(item);
         itemsMenuToday.push({title:item.content, item:item, icon:icon});
       });
       
@@ -199,11 +209,12 @@ function displayProject(project) {
     var items = [];
     data.forEach(function(item, index, array) {
       var icon = item.checked ? 'images/checkmark.png' : '';
+      replaceGmail(item);
       items.push({title:item.content, item:item, icon:icon});
     });
     itemsMenu.items(0,items);
     itemsMenu.on('select', function(e) {
-      completeItem(e.menu, e.itemIndex, e.item);
+      completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
     });
     itemsMenu.on('longSelect', function(e) {
       displayMessageWithSubtitle(e.item.item.content);
@@ -264,4 +275,5 @@ function loadProjects() {
   }
 }
 token = localStorage.getItem(appKey);
+//token = "ac864848aaf8b7976a853d5f9e65684e9c310662";
 loadProjects();
