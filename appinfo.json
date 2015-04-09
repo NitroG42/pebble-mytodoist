@@ -29,14 +29,14 @@
                 "type": "font"
             },
             {
-                "file": "images/todoist.png",
-                "menuIcon": true,
-                "name": "IMAGES_TODOIST_PNG",
+                "file": "images/checkmark.png",
+                "name": "IMAGES_CHECKMARK_PNG",
                 "type": "png"
             },
             {
-                "file": "images/checkmark.png",
-                "name": "IMAGES_CHECKMARK_PNG",
+                "file": "images/todoist.png",
+                "menuIcon": true,
+                "name": "IMAGES_TODOIST_PNG",
                 "type": "png"
             }
         ]
@@ -44,7 +44,7 @@
     "shortName": "MyTodoist",
     "uuid": "30025c65-8dab-40cf-9f47-c75c708799af",
     "versionCode": 1,
-    "versionLabel": "1.1",
+    "versionLabel": "1.2",
     "watchapp": {
         "watchface": false
     }
