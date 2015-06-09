@@ -141,9 +141,13 @@ function queryToday() {
       items: []
     }]
   });
+    var params = {
+      token: token,
+      queries: JSON.stringify([todayString, overdueString])
+    };
   Ajax(
   {
-    url: 'https://todoist.com/API/query?token='+token+"&queries="+JSON.stringify([todayString, overdueString]),
+    url: 'https://todoist.com/API/query?' + Ajax.formify(params) ,
     type: 'json',
   },
   function(data) {
