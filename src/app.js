@@ -9,6 +9,11 @@ var TODOIST_API_URL = 'https://todoist.com/API/v6/sync?';
 var todayString = "Today";
 var overdueString = "overdue";
 
+var textColor = 'lightGray';
+var textHightLightColor = 'white';
+var menuColor = 'black';
+var highlightColor = 'darkCandyAppleRed';
+
 var loading = new UI.Window();
 var loadingBackground = new UI.Rect({position: new Vector2(0,0), size: new Vector2(144,168)});
 var loadingText = new UI.Text({ position: new Vector2(0, 60), size: new Vector2(144, 20),
@@ -202,7 +207,7 @@ function replaceGmail(item) {
 
 function clickOnItemProject(projectItem, itemsTodoist) {
   if(projectItem.custom) {
-    if(projectItem.title == todayString) {
+    if(projectItem.title == todayString.toUpperCase()) {
       queryToday(itemsTodoist);
     }
   } else {
@@ -212,6 +217,10 @@ function clickOnItemProject(projectItem, itemsTodoist) {
 
 function queryToday() {
     var itemsMenu = new UI.Menu({
+                backgroundColor: menuColor,
+          textColor: textColor,
+          highlightBackgroundColor: highlightColor,
+          highlightTextColor: textHightLightColor,
   sections: [{
       title: overdueString,
       items: []
@@ -256,11 +265,7 @@ function queryToday() {
       itemsMenu.items(0,itemsMenuOverdue);
       itemsMenu.items(1,itemsMenuToday);
       itemsMenu.on('select', function(e) {
-          if(e.item.item.date_string) {
-            updateRecurringItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
-          } else {
-            completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
-          }
+          onItemClick(e);
       });
       itemsMenu.on('longSelect', function(e) {
         displayMessageWithSubtitle(e.item.item.content);
@@ -277,19 +282,25 @@ function queryToday() {
 );
 }
 
+function onItemClick(e) {
+  if(e.item.item.date_string) {
+            updateRecurringItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
+          } else {
+            completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
+          }
+}
+
 function displayProject(project, itemsTodoist) {
   var itemsMenu = new UI.Menu({
+              backgroundColor: menuColor,
+          textColor: textColor,
+          highlightBackgroundColor: highlightColor,
+          highlightTextColor: textHightLightColor,
   sections: [{
       title: project.name,
       items: []
     }]
   });
-/*  Ajax(
-  {
-    url: 'https://todoist.com/API/getUncompletedItems?token='+token+"&project_id="+project.id,
-    type: 'json',
-  },
-  function(data) {*/
     if(itemsTodoist && itemsTodoist.length > 0) {
       var itemsFromProject = [];
       itemsTodoist.forEach(function(item, index, array) {
@@ -307,15 +318,11 @@ function displayProject(project, itemsTodoist) {
         itemsFromProject.forEach(function(item, index, array) {
             var icon = item.checked ? 'images/checkmark.png' : '';
             replaceGmail(item);
-            items.push({title:item.content, item:item, icon:icon});
+          items.push({title:item.content, subtitle:item.due_date, item:item, icon:icon});
         });
         itemsMenu.items(0,items);
         itemsMenu.on('select', function(e) {
-          if(e.item.item.date_string) {
-            updateRecurringItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
-          } else {
-            completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
-          }
+          onItemClick(e);
         });
         itemsMenu.on('longSelect', function(e) {
           displayMessageWithSubtitle(e.item.item.content);
@@ -327,16 +334,9 @@ function displayProject(project, itemsTodoist) {
     } else {
       displayMessage(project.name, "No tasks to display");
     }
-/*  },
-  function(error) {
-    console.log('fail with project id ' + project.id);
-    console.log(error);
-  }
-);*/
 }
 
 var resource_types = JSON.stringify(["projects", "items"]);
-
 
 function loadProjects() {
   token = "e007f5a977462411441280c12cd8f63e4c5a8d33";
@@ -356,6 +356,10 @@ function loadProjects() {
       function(data) {
 //        console.log("success");
         var menu = new UI.Menu({
+          backgroundColor: menuColor,
+          textColor: textColor,
+          highlightBackgroundColor: highlightColor,
+          highlightTextColor: textHightLightColor,
           sections: [{
             title: 'Projects',
             items: []
@@ -365,7 +369,7 @@ function loadProjects() {
         //console.log('data: '+ JSON.stringify(data, null, 4));
         
         var projectMenuItems = [];
-        projectMenuItems.push({title:todayString, project:null, custom:true});
+        projectMenuItems.push({title:todayString.toUpperCase(), project:null, custom:true});
         var projectsTodoist = data.Projects;
         if(projectsTodoist && projectsTodoist.length > 1) {
           projectsTodoist.sort(function(a,b) {
@@ -373,7 +377,7 @@ function loadProjects() {
           });
         }
         projectsTodoist.forEach(function(project, index, array) {
-          projectMenuItems.push({title:project.name, project:project, custom:false});
+          projectMenuItems.push({title:project.name.toUpperCase(), project:project, custom:false});
         });
         var itemsTodoist = data.Items;
         menu.items(0,projectMenuItems);
