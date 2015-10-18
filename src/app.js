@@ -68,6 +68,24 @@ function getSendCommand(type, args) {
   return {params:params, uuid:uuid};
 }
 
+function getMenu(sections) {
+  var menu;
+  if(Pebble.getActiveWatchInfo) {
+    menu = new UI.Menu({
+          backgroundColor: menuColor,
+          textColor: textColor,
+          highlightBackgroundColor: highlightColor,
+          highlightTextColor: textHightLightColor,
+          sections: sections
+        }); 
+  } else {
+    menu = new UI.Menu({
+      sections:sections
+        }); 
+  }
+  return menu;
+}
+
 
 Pebble.addEventListener('showConfiguration', function(e) {
   // Show config page
@@ -216,19 +234,14 @@ function clickOnItemProject(projectItem, itemsTodoist) {
 }
 
 function queryToday() {
-    var itemsMenu = new UI.Menu({
-                backgroundColor: menuColor,
-          textColor: textColor,
-          highlightBackgroundColor: highlightColor,
-          highlightTextColor: textHightLightColor,
-  sections: [{
-      title: overdueString,
-      items: []
-    }, {
-      title: todayString,
-      items: []
-    }]
-  });
+    var itemsMenu = getMenu([{
+        title: overdueString,
+        items: []
+      }, {
+        title: todayString,
+        items: []
+      }]
+    );
     var params = {
       token: token,
       queries: JSON.stringify([todayString, overdueString])
@@ -291,16 +304,12 @@ function onItemClick(e) {
 }
 
 function displayProject(project, itemsTodoist) {
-  var itemsMenu = new UI.Menu({
-              backgroundColor: menuColor,
-          textColor: textColor,
-          highlightBackgroundColor: highlightColor,
-          highlightTextColor: textHightLightColor,
-  sections: [{
+  var itemsMenu = getMenu([{
       title: project.name,
       items: []
     }]
-  });
+  );
+  
     if(itemsTodoist && itemsTodoist.length > 0) {
       var itemsFromProject = [];
       itemsTodoist.forEach(function(item, index, array) {
@@ -339,7 +348,6 @@ function displayProject(project, itemsTodoist) {
 var resource_types = JSON.stringify(["projects", "items"]);
 
 function loadProjects() {
-  token = "e007f5a977462411441280c12cd8f63e4c5a8d33";
   if(token) {
     var params = {
       token: token,
@@ -355,16 +363,10 @@ function loadProjects() {
       },
       function(data) {
 //        console.log("success");
-        var menu = new UI.Menu({
-          backgroundColor: menuColor,
-          textColor: textColor,
-          highlightBackgroundColor: highlightColor,
-          highlightTextColor: textHightLightColor,
-          sections: [{
+        var menu = getMenu([{
             title: 'Projects',
             items: []
-          }]
-        });
+          }]);
         loading.hide();
         //console.log('data: '+ JSON.stringify(data, null, 4));
         
@@ -401,5 +403,5 @@ function loadProjects() {
     displayMessage('Token ID', 'Please set your token ID in the app\'s settings');
   }
 }
-//token = localStorage.getItem(appKey);
+token = localStorage.getItem(appKey);
 loadProjects();

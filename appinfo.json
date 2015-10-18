@@ -29,23 +29,27 @@
                 "type": "font"
             },
             {
-                "file": "images/checkmark.png",
-                "name": "IMAGES_CHECKMARK_PNG",
-                "type": "png"
-            },
-            {
                 "file": "images/todoist.png",
                 "menuIcon": true,
                 "name": "IMAGES_TODOIST_PNG",
+                "type": "png"
+            },
+            {
+                "file": "images/checkmark.png",
+                "name": "IMAGES_CHECKMARK_PNG",
                 "type": "png"
             }
         ]
     },
     "sdkVersion": "3",
     "shortName": "MyTodoist",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
     "uuid": "30025c65-8dab-40cf-9f47-c75c708799af",
     "versionCode": 1,
-    "versionLabel": "1.4",
+    "versionLabel": "2.0",
     "watchapp": {
         "hiddenApp": false,
         "watchface": false
