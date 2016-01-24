@@ -11,17 +11,17 @@
             {
                 "file": "images/menu_icon.png",
                 "name": "IMAGE_MENU_ICON",
-                "type": "png"
+                "type": "bitmap"
             },
             {
                 "file": "images/logo_splash.png",
                 "name": "IMAGE_LOGO_SPLASH",
-                "type": "png"
+                "type": "bitmap"
             },
             {
                 "file": "images/tile_splash.png",
                 "name": "IMAGE_TILE_SPLASH",
-                "type": "png"
+                "type": "bitmap"
             },
             {
                 "file": "fonts/UbuntuMono-Regular.ttf",
@@ -32,12 +32,12 @@
                 "file": "images/todoist.png",
                 "menuIcon": true,
                 "name": "IMAGES_TODOIST_PNG",
-                "type": "png"
+                "type": "bitmap"
             },
             {
                 "file": "images/checkmark.png",
                 "name": "IMAGES_CHECKMARK_PNG",
-                "type": "png"
+                "type": "bitmap"
             }
         ]
     },
@@ -49,7 +49,7 @@
     ],
     "uuid": "30025c65-8dab-40cf-9f47-c75c708799af",
     "versionCode": 1,
-    "versionLabel": "2.0",
+    "versionLabel": "2.1",
     "watchapp": {
         "hiddenApp": false,
         "watchface": false

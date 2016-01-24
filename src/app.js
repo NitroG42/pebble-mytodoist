@@ -3,6 +3,7 @@ var appKey = '4EBM';
 var UI = require('ui');
 var Vector2 = require('vector2');
 var Ajax = require('ajax');
+var Platform = require('platform');
 
 var TODOIST_API_URL = 'https://todoist.com/API/v6/sync?';
 
@@ -26,6 +27,20 @@ loading.show();
 var token;
 var seq_no = 0;
 var seq_no_global = 0;
+
+function loadColors() {
+  if(Pebble.getActiveWatchInfo && Platform.version() !== 'aplite') {
+      textColor = 'lightGray';
+      textHightLightColor = 'white';
+      menuColor = 'black';
+      highlightColor = 'darkCandyAppleRed';
+  } else { //aplite
+      textColor = 'black';
+      textHightLightColor = 'white';
+      menuColor = 'white';
+      highlightColor = 'black';
+  }
+}
 
 function displayMessage(title, subtitle) {
   var card = new UI.Card();
@@ -404,4 +419,5 @@ function loadProjects() {
   }
 }
 token = localStorage.getItem(appKey);
+loadColors();
 loadProjects();
