@@ -4,8 +4,9 @@ var UI = require('ui');
 var Vector2 = require('vector2');
 var Ajax = require('ajax');
 var Platform = require('platform');
+var Features = require('platform/feature');
 
-var TODOIST_API_URL = 'https://todoist.com/API/v6/sync?';
+var TODOIST_API_URL = 'https://todoist.com/API/v7/sync?';
 
 var todayString = "Today";
 var overdueString = "overdue";
@@ -25,14 +26,13 @@ loading.add(loadingText);
 loading.show();
 
 var token;
-var seq_no = 0;
-var seq_no_global = 0;
+var sync_token = "*";
 
 function loadColors() {
   if(Pebble.getActiveWatchInfo && Platform.version() !== 'aplite') {
-      textColor = 'lightGray';
+      textColor = 'black';
       textHightLightColor = 'white';
-      menuColor = 'black';
+      menuColor = 'white';
       highlightColor = 'darkCandyAppleRed';
   } else { //aplite
       textColor = 'black';
@@ -85,13 +85,17 @@ function getSendCommand(type, args) {
 
 function getMenu(sections) {
   var menu;
-  if(Pebble.getActiveWatchInfo) {
+  if(!Features.blackAndWhite()) {
     menu = new UI.Menu({
           backgroundColor: menuColor,
           textColor: textColor,
           highlightBackgroundColor: highlightColor,
           highlightTextColor: textHightLightColor,
-          sections: sections
+          sections: sections,
+          status: {
+            color: textColor,
+            backgroundColor: menuColor
+          }
         }); 
   } else {
     menu = new UI.Menu({
@@ -145,29 +149,27 @@ Pebble.addEventListener('webviewclosed', function(e) {
   }
 });
 
-var COMMAND_COMPLETE_ITEM = "item_complete";
+var COMMAND_CLOSE_ITEM = "item_close";
 var COMMAND_UNCOMPLETE_ITEM = "item_uncomplete";
-var COMMAND_UPDATE_RECURING_ITEM = "item_update_date_complete";
 
 function completeItem(menu, sectionIndex, menuItemIndex, menuItem) {
   if(menuItem.item) {
     console.log('id ' + menuItem.item.id);
-    var id = JSON.stringify([menuItem.item.id]);
     var checked = menuItem.item.checked;
     
-    var args = {
-        project_id: menuItem.item.project_id,
-        ids: id
-    };
+    var args;
     var command;
     if(checked) {
+      args = {
+          ids: JSON.stringify([menuItem.item.id])
+      };
       command = getSendCommand(COMMAND_UNCOMPLETE_ITEM, args);
     } else {
-      if(menuItem.item.indent > 1) {
-        args.force_history = 0;
-      }
+      args = {
+          id: JSON.stringify(menuItem.item.id)
+      };
       console.log("date string : " + menuItem.item.date_string);
-      command = getSendCommand(COMMAND_COMPLETE_ITEM, args);
+      command = getSendCommand(COMMAND_CLOSE_ITEM, args);
     }
     console.log("data : " + JSON.stringify(command.params, null, 4));
     Ajax(
@@ -177,8 +179,8 @@ function completeItem(menu, sectionIndex, menuItemIndex, menuItem) {
       },
       function(data) {
         console.log(JSON.stringify(data, null, 4));
-        console.log("status : " + data.SyncStatus[command.uuid][menuItem.item.id]);
-        if(data.SyncStatus[command.uuid][menuItem.item.id] == "ok") {
+        console.log("status : " + data.sync_status[command.uuid]);
+        if(data.sync_status[command.uuid] == "ok") {
           menuItem.item.checked = !menuItem.item.checked;
           if(checked) {
             menu.item(sectionIndex, menuItemIndex, {title:menuItem.title, item:menuItem.item, icon:''});
@@ -196,39 +198,6 @@ function completeItem(menu, sectionIndex, menuItemIndex, menuItem) {
      displayMessage('Error');
   }
 }
-
-function updateRecurringItem(menu, sectionIndex, menuItemIndex, menuItem) {
-  if(menuItem.item) {
-    console.log('id ' + menuItem.item.id);
-    
-    var args = {
-        id: menuItem.item.id
-    };
-    var command = getSendCommand(COMMAND_UPDATE_RECURING_ITEM, args);
-
-    console.log("data : " + JSON.stringify(command.params, null, 4));
-    Ajax(
-      {
-        url: TODOIST_API_URL+Ajax.formify(command.params),
-        type: 'json',
-      },
-      function(data) {
-        console.log(JSON.stringify(data, null, 4));
-        console.log("status : " + data.SyncStatus[command.uuid]);
-        if(data.SyncStatus[command.uuid] == "ok") {
-          
-        }
-      },
-      function(error) {
-        console.log("error : " + JSON.stringify(error, null, 4));
-      }      
-    );
-    console.log(menuItem.icon);
-  } else {
-     displayMessage('Error');
-  }
-}
-
 
 function replaceGmail(item) {
   if (item.content.search(/^https:\/\/mail.google.com/) === 0){
@@ -263,7 +232,7 @@ function queryToday() {
     };
   Ajax(
   {
-    url: 'https://todoist.com/API/query?' + Ajax.formify(params) ,
+    url: 'https://todoist.com/API/v7/query?' + Ajax.formify(params) ,
     type: 'json',
   },
   function(data) {
@@ -311,11 +280,9 @@ function queryToday() {
 }
 
 function onItemClick(e) {
-  if(e.item.item.date_string) {
-            updateRecurringItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
-          } else {
-            completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
-          }
+  console.log('date');
+  console.log(e.item.item.date_string);
+  completeItem(e.menu, e.sectionIndex, e.itemIndex, e.item);
 }
 
 function displayProject(project, itemsTodoist) {
@@ -342,7 +309,7 @@ function displayProject(project, itemsTodoist) {
         itemsFromProject.forEach(function(item, index, array) {
             var icon = item.checked ? 'images/checkmark.png' : '';
             replaceGmail(item);
-          items.push({title:item.content, subtitle:item.due_date, item:item, icon:icon});
+          items.push({title:item.content, subtitle:item.due_date || "", item:item, icon:icon});
         });
         itemsMenu.items(0,items);
         itemsMenu.on('select', function(e) {
@@ -366,8 +333,7 @@ function loadProjects() {
   if(token) {
     var params = {
       token: token,
-      seq_no: seq_no,
-      seq_no_global: seq_no_global,
+      sync_token: sync_token,
       resource_types: resource_types
     };
 
@@ -387,7 +353,7 @@ function loadProjects() {
         
         var projectMenuItems = [];
         projectMenuItems.push({title:todayString.toUpperCase(), project:null, custom:true});
-        var projectsTodoist = data.Projects;
+        var projectsTodoist = data.projects;
         if(projectsTodoist && projectsTodoist.length > 1) {
           projectsTodoist.sort(function(a,b) {
              return a.item_order - b.item_order;
@@ -396,7 +362,7 @@ function loadProjects() {
         projectsTodoist.forEach(function(project, index, array) {
           projectMenuItems.push({title:project.name.toUpperCase(), project:project, custom:false});
         });
-        var itemsTodoist = data.Items;
+        var itemsTodoist = data.items;
         menu.items(0,projectMenuItems);
         menu.on('select', function(e) {
           clickOnItemProject(e.item, itemsTodoist);
@@ -408,8 +374,8 @@ function loadProjects() {
         if(!error) {
           displayMessage('Network', 'No network, or network problem');
         } else {
-          console.log("token :" + token);
-          console.log(error);
+          //console.log("token :" + token);
+          //console.log(error);
           displayMessage('Token ID', 'Error, bad token');
         }
       }
@@ -418,6 +384,7 @@ function loadProjects() {
     displayMessage('Token ID', 'Please set your token ID in the app\'s settings');
   }
 }
+//token = "a4aa94853d6df40e3e0a45197dee1482f5142389";//test token
 token = localStorage.getItem(appKey);
 loadColors();
 loadProjects();
